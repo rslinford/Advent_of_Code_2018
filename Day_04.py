@@ -110,7 +110,7 @@ def find_sleepiest_minute(guard, log):
     return find_max_minute(minute_tally)
 
 
-def grock_log(log):
+def grok_log_strategy_one(log):
     guard_pool = {}
     guard_on_duty = None
     for entry in log:
@@ -119,11 +119,9 @@ def grock_log(log):
                 guard_pool[entry.guard_id] = Guard(entry.guard_id)
             guard_on_duty = guard_pool[entry.guard_id]
             if guard_on_duty.most_recent_entry:
-                pass  # todo: state transition logic here: Changing of the Guard
+                pass  #  State transition logic here: Changing of the Guard
             guard_on_duty.most_recent_entry = entry
-            # print(guard_on_duty)
         else:
-            # print(f'On duty {guard_on_duty}')
             if entry.event_type == Event.WAKES_UP:
                 # The last event should be a Falls Asleep
                 assert (guard_on_duty.most_recent_entry.event_type == Event.FALLS_ASLEEP)
@@ -131,26 +129,57 @@ def grock_log(log):
                 # Record those winks
                 delta = entry.timestamp - guard_on_duty.most_recent_entry.timestamp
                 guard_on_duty.winks += delta
-                # print(f'Delta {delta}')
             guard_on_duty.most_recent_entry = entry
     guard_ranking = list(guard_pool.values())
     guard_ranking.sort(reverse=True)
     winner = guard_ranking[0]
     minute = find_sleepiest_minute(winner, log)
-    # print(f'Winner: {winner} Minute: {minute}')
     return winner, minute
 
+def grok_log_strategy_two(log):
+    guard_pool = {}
+    guard_on_duty = None
+    for entry in log:
+        if entry.guard_id:
+            if entry.guard_id not in guard_pool.keys():
+                guard_pool[entry.guard_id] = Guard(entry.guard_id)
+            guard_on_duty = guard_pool[entry.guard_id]
+            if guard_on_duty.most_recent_entry:
+                pass  #  State transition logic here: Changing of the Guard
+            guard_on_duty.most_recent_entry = entry
+        else:
+            if entry.event_type == Event.WAKES_UP:
+                # The last event should be a Falls Asleep
+                assert (guard_on_duty.most_recent_entry.event_type == Event.FALLS_ASLEEP)
+                # State transition logic: Simple State Change (same guard)
+                # Record those winks
+                delta = entry.timestamp - guard_on_duty.most_recent_entry.timestamp
+                guard_on_duty.winks += delta
+            guard_on_duty.most_recent_entry = entry
+    guard_ranking = list(guard_pool.values())
+    guard_ranking.sort(reverse=True)
+    winner = guard_ranking[0]
+    minute = find_sleepiest_minute(winner, log)
+    return winner, minute
 
-def part_1(filename):
+def part_one(filename):
     text_log_entries = read_puzzle_data(filename)
     log = sort_log(text_log_entries)
-    winner, minute = grock_log(log)
+    winner, minute = grok_log_strategy_one(log)
+    # for entry in log:
+    #     print(entry)
+    return winner, minute
+
+def part_two(filename):
+    text_log_entries = read_puzzle_data(filename)
+    log = sort_log(text_log_entries)
+    winner, minute = grok_log_strategy_one(log)
     # for entry in log:
     #     print(entry)
     return winner, minute
 
 
-winner, minute = part_1('Day_04_data.txt')
+winner, minute = part_two('Day_04_data.txt')
 print(f'Winner: {winner.id} minute: {minute} answer: {winner.id * minute}')
 
 
@@ -168,6 +197,6 @@ class TestLog(unittest.TestCase):
         self.assertNotEqual('', log[1].event_type, Event.BEGINS_SHIFT)
 
     def test_part_1(self):
-        winner, minute = part_1('Day_04_short_data.txt')
+        winner, minute = part_one('Day_04_short_data.txt')
         self.assertEqual(10, winner.id)
         self.assertEqual(24, minute)
