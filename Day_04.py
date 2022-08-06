@@ -101,9 +101,9 @@ def find_sleepiest_minute(guard, log):
                 elif entry.event_type == Event.WAKES_UP:
                     assert (guard.most_recent_entry.event_type == Event.FALLS_ASLEEP)
                     delta = entry.timestamp - guard.most_recent_entry.timestamp
-                    print(f'{delta}')
-                    print(f'from {guard.most_recent_entry.timestamp}')
-                    print(f'to   {entry.timestamp}')
+                    # print(f'{delta}')
+                    # print(f'from {guard.most_recent_entry.timestamp}')
+                    # print(f'to   {entry.timestamp}')
                     mark_the_minutes(guard.most_recent_entry.timestamp, entry.timestamp, minute_tally)
                 else:
                     raise TypeError(f'Unexpected event type {entry.event_type}')
@@ -137,18 +137,21 @@ def grock_log(log):
     guard_ranking.sort(reverse=True)
     winner = guard_ranking[0]
     minute = find_sleepiest_minute(winner, log)
-    print(f'Winner: {winner} Minute: {minute}')
+    # print(f'Winner: {winner} Minute: {minute}')
+    return winner, minute
 
 
-def part_1():
-    text_log_entries = read_puzzle_data('Day_04_short_data.txt')
+def part_1(filename):
+    text_log_entries = read_puzzle_data(filename)
     log = sort_log(text_log_entries)
-    grock_log(log)
+    winner, minute = grock_log(log)
     # for entry in log:
     #     print(entry)
+    return winner, minute
 
 
-part_1()
+winner, minute = part_1('Day_04_data.txt')
+print(f'Winner: {winner.id} minute: {minute} answer: {winner.id * minute}')
 
 
 class TestLog(unittest.TestCase):
@@ -163,3 +166,8 @@ class TestLog(unittest.TestCase):
         self.assertEqual(datetime.datetime(1518, 11, 1, 0, 5),
                          log[1].timestamp)
         self.assertNotEqual('', log[1].event_type, Event.BEGINS_SHIFT)
+
+    def test_part_1(self):
+        winner, minute = part_1('Day_04_short_data.txt')
+        self.assertEqual(10, winner.id)
+        self.assertEqual(24, minute)
