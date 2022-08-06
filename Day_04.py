@@ -3,15 +3,21 @@ import re
 import unittest
 from enum import Enum
 
+import numpy as np
+
 
 class Guard:
     def __init__(self, id):
         self.id = id
         self.most_recent_entry = None
-        self.winks = datetime.timedelta(0) # total minutes slept
+        self.winks = datetime.timedelta(0)  # total minutes slept
 
     def __repr__(self):
         return f'Guard({self.id}) winks: {self.winks}  current: {self.most_recent_entry}'
+
+    def __lt__(self, other):
+        return self.winks < other.winks
+
 
 class Event(Enum):
     BEGINS_SHIFT = 1
@@ -45,15 +51,18 @@ class LogEntry:
     def __lt__(self, other):
         return self.timestamp < other.timestamp
 
+
 """
 000000000011111111112222222222333333333344444444445555555555
 012345678901234567890123456789012345678901234567890123456789
 """
 
+
 def read_puzzle_data(filename):
     with open(filename, 'r') as f:
         data = f.read().strip().split('\n')
     return data
+
 
 def sort_log(text_log_entries):
     rval = []
@@ -61,6 +70,45 @@ def sort_log(text_log_entries):
         rval.append(LogEntry(text_log_entry))
     rval.sort()
     return rval
+
+
+def mark_the_minutes(ts1: datetime.datetime, ts2: datetime.datetime, minute_tally):
+    start_minute = ts1.minute
+    end_minute = ts2.minute
+    for minute in range(start_minute, end_minute):
+        minute_tally[minute] += 1
+
+def find_max_minute(minute_tally):
+    max_minute = 0
+    max_index = -1
+    for i in range(minute_tally.shape[0]):
+        if minute_tally[i] > max_minute:
+            max_minute = minute_tally[i]
+            max_index = i
+    return max_index
+
+
+def find_sleepiest_minute(guard, log):
+    on_duty_guard_id = None
+    minute_tally = np.zeros((60), dtype=int)
+    for entry in log:
+        if entry.guard_id:
+            on_duty_guard_id = entry.guard_id
+        else:
+            if on_duty_guard_id == guard.id:
+                if entry.event_type == Event.FALLS_ASLEEP:
+                    guard.most_recent_entry = entry
+                elif entry.event_type == Event.WAKES_UP:
+                    assert (guard.most_recent_entry.event_type == Event.FALLS_ASLEEP)
+                    delta = entry.timestamp - guard.most_recent_entry.timestamp
+                    print(f'{delta}')
+                    print(f'from {guard.most_recent_entry.timestamp}')
+                    print(f'to   {entry.timestamp}')
+                    mark_the_minutes(guard.most_recent_entry.timestamp, entry.timestamp, minute_tally)
+                else:
+                    raise TypeError(f'Unexpected event type {entry.event_type}')
+    return find_max_minute(minute_tally)
+
 
 def grock_log(log):
     guard_pool = {}
@@ -71,29 +119,34 @@ def grock_log(log):
                 guard_pool[entry.guard_id] = Guard(entry.guard_id)
             guard_on_duty = guard_pool[entry.guard_id]
             if guard_on_duty.most_recent_entry:
-                pass # todo: state transition logic here: Changing of the Guard
+                pass  # todo: state transition logic here: Changing of the Guard
             guard_on_duty.most_recent_entry = entry
-            print(guard_on_duty)
+            # print(guard_on_duty)
         else:
-            print(f'On duty {guard_on_duty}')
+            # print(f'On duty {guard_on_duty}')
             if entry.event_type == Event.WAKES_UP:
                 # The last event should be a Falls Asleep
-                assert(guard_on_duty.most_recent_entry.event_type == Event.FALLS_ASLEEP)
+                assert (guard_on_duty.most_recent_entry.event_type == Event.FALLS_ASLEEP)
+                # State transition logic: Simple State Change (same guard)
                 # Record those winks
                 delta = entry.timestamp - guard_on_duty.most_recent_entry.timestamp
                 guard_on_duty.winks += delta
-                print(f'Delta {delta}')
-            # todo: State transition logic here: Simple State Change
+                # print(f'Delta {delta}')
             guard_on_duty.most_recent_entry = entry
-
+    guard_ranking = list(guard_pool.values())
+    guard_ranking.sort(reverse=True)
+    winner = guard_ranking[0]
+    minute = find_sleepiest_minute(winner, log)
+    print(f'Winner: {winner} Minute: {minute}')
 
 
 def part_1():
     text_log_entries = read_puzzle_data('Day_04_short_data.txt')
     log = sort_log(text_log_entries)
     grock_log(log)
-    for entry in log:
-        print(entry)
+    # for entry in log:
+    #     print(entry)
+
 
 part_1()
 
