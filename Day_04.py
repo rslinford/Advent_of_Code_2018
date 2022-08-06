@@ -12,8 +12,12 @@ class LogEntry:
         result = re.search('Guard #(\d+)', self.entry_text)
         if result:
             self.guard_id = result.group(1)
+
     def __repr__(self):
         return f'{self.timestamp} {self.entry_text} id: {self.guard_id}'
+
+    def __lt__(self, other):
+        return self.timestamp < other.timestamp
 
 
 def read_puzzle_data(filename):
@@ -21,12 +25,18 @@ def read_puzzle_data(filename):
         data = f.read().strip().split('\n')
     return data
 
+def sort_log(text_log_entries):
+    rval = []
+    for text_log_entry in text_log_entries:
+        rval.append(LogEntry(text_log_entry))
+    rval.sort()
+    return rval
 
 
 def part_1():
     text_log_entries = read_puzzle_data('Day_04_short_data.txt')
-    for text_log_entry in text_log_entries:
-        entry = LogEntry(text_log_entry)
+    log = sort_log(text_log_entries)
+    for entry in log:
         print(entry)
 
 part_1()
