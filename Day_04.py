@@ -78,6 +78,7 @@ def mark_the_minutes(ts1: datetime.datetime, ts2: datetime.datetime, minute_tall
     for minute in range(start_minute, end_minute):
         minute_tally[minute] += 1
 
+
 def find_max_minute(minute_tally):
     max_minute = 0
     max_index = -1
@@ -101,15 +102,13 @@ def find_sleepiest_minute(guard, log):
                 elif entry.event_type == Event.WAKES_UP:
                     assert (guard.most_recent_entry.event_type == Event.FALLS_ASLEEP)
                     delta = entry.timestamp - guard.most_recent_entry.timestamp
-                    # print(f'{delta}')
-                    # print(f'from {guard.most_recent_entry.timestamp}')
-                    # print(f'to   {entry.timestamp}')
                     mark_the_minutes(guard.most_recent_entry.timestamp, entry.timestamp, minute_tally)
                 else:
                     raise TypeError(f'Unexpected event type {entry.event_type}')
     return find_max_minute(minute_tally)
 
 
+# Find the guard that has the most minutes asleep. What minute does that guard spend asleep the most?
 def grok_log_strategy_one(log):
     guard_pool = {}
     guard_on_duty = None
@@ -119,11 +118,11 @@ def grok_log_strategy_one(log):
                 guard_pool[entry.guard_id] = Guard(entry.guard_id)
             guard_on_duty = guard_pool[entry.guard_id]
             if guard_on_duty.most_recent_entry:
-                pass  #  State transition logic here: Changing of the Guard
+                pass  # State transition logic here: Changing of the Guard
             guard_on_duty.most_recent_entry = entry
         else:
             if entry.event_type == Event.WAKES_UP:
-                # The last event should be a Falls Asleep
+                # The previous event should be a Falls Asleep
                 assert (guard_on_duty.most_recent_entry.event_type == Event.FALLS_ASLEEP)
                 # State transition logic: Simple State Change (same guard)
                 # Record those winks
@@ -136,6 +135,8 @@ def grok_log_strategy_one(log):
     minute = find_sleepiest_minute(winner, log)
     return winner, minute
 
+
+# Of all guards, which guard is most frequently asleep on the same minute?
 def grok_log_strategy_two(log):
     guard_pool = {}
     guard_on_duty = None
@@ -145,11 +146,11 @@ def grok_log_strategy_two(log):
                 guard_pool[entry.guard_id] = Guard(entry.guard_id)
             guard_on_duty = guard_pool[entry.guard_id]
             if guard_on_duty.most_recent_entry:
-                pass  #  State transition logic here: Changing of the Guard
+                pass  # State transition logic here: Changing of the Guard
             guard_on_duty.most_recent_entry = entry
         else:
             if entry.event_type == Event.WAKES_UP:
-                # The last event should be a Falls Asleep
+                # The previous event should be a Falls Asleep
                 assert (guard_on_duty.most_recent_entry.event_type == Event.FALLS_ASLEEP)
                 # State transition logic: Simple State Change (same guard)
                 # Record those winks
@@ -162,6 +163,7 @@ def grok_log_strategy_two(log):
     minute = find_sleepiest_minute(winner, log)
     return winner, minute
 
+
 def part_one(filename):
     text_log_entries = read_puzzle_data(filename)
     log = sort_log(text_log_entries)
@@ -169,6 +171,7 @@ def part_one(filename):
     # for entry in log:
     #     print(entry)
     return winner, minute
+
 
 def part_two(filename):
     text_log_entries = read_puzzle_data(filename)
