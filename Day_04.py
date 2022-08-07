@@ -11,6 +11,7 @@ class Guard:
         self.id = id
         self.most_recent_entry = None
         self.winks = datetime.timedelta(0)  # total minutes slept
+        self.minute_tally = None
 
     def __repr__(self):
         return f'Guard({self.id}) winks: {self.winks}  current: {self.most_recent_entry}'
@@ -135,6 +136,38 @@ def grok_log_strategy_one(log):
     minute = find_sleepiest_minute(winner, log)
     return winner, minute
 
+def find_minute_of_greatest_frequency(guard_pool):
+    greatest_max_minute = 0
+    greatest_guard = None
+    greatest_max_index = 0
+    for guard in guard_pool.values():
+        max_minute_index = find_max_minute(guard.minute_tally)
+        print(f'Minute: {max_minute_index} Tallied at: {guard.minute_tally[max_minute_index]} for\n{guard.minute_tally}')
+        if guard.minute_tally[max_minute_index] > greatest_max_minute:
+            greatest_max_minute = guard.minute_tally[max_minute_index]
+            greatest_guard = guard
+            greatest_max_index = max_minute_index
+    return greatest_guard, greatest_max_index
+
+def find_sleepiest_minute_two(guard_pool, log):
+    for guard in guard_pool.values():
+        on_duty_guard_id = None
+        guard.minute_tally = np.zeros((60), dtype=int)
+        for entry in log:
+            if entry.guard_id:
+                on_duty_guard_id = entry.guard_id
+            else:
+                if on_duty_guard_id == guard.id:
+                    if entry.event_type == Event.FALLS_ASLEEP:
+                        guard.most_recent_entry = entry
+                    elif entry.event_type == Event.WAKES_UP:
+                        assert (guard.most_recent_entry.event_type == Event.FALLS_ASLEEP)
+                        mark_the_minutes(guard.most_recent_entry.timestamp, entry.timestamp, guard.minute_tally)
+                    else:
+                        raise TypeError(f'Unexpected event type {entry.event_type}')
+
+    return find_minute_of_greatest_frequency(guard_pool)
+
 
 # Of all guards, which guard is most frequently asleep on the same minute?
 def grok_log_strategy_two(log):
@@ -157,10 +190,8 @@ def grok_log_strategy_two(log):
                 delta = entry.timestamp - guard_on_duty.most_recent_entry.timestamp
                 guard_on_duty.winks += delta
             guard_on_duty.most_recent_entry = entry
-    guard_ranking = list(guard_pool.values())
-    guard_ranking.sort(reverse=True)
-    winner = guard_ranking[0]
-    minute = find_sleepiest_minute(winner, log)
+
+    winner, minute = find_sleepiest_minute_two(guard_pool, log)
     return winner, minute
 
 
@@ -176,9 +207,8 @@ def part_one(filename):
 def part_two(filename):
     text_log_entries = read_puzzle_data(filename)
     log = sort_log(text_log_entries)
-    winner, minute = grok_log_strategy_one(log)
-    # for entry in log:
-    #     print(entry)
+    winner, minute = grok_log_strategy_two(log)
+    print(f'Greatest minute {minute} for {winner}')
     return winner, minute
 
 
