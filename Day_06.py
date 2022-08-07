@@ -28,7 +28,7 @@ def size_the_grid(points):
 def create_grid(points, grid_size):
     rval = []
     for _ in range(grid_size + 1):
-        rval.append(['.'] * grid_size)
+        rval.append(['.'] * (grid_size + 1))
     return rval
 
 def render_grid(grid):
@@ -45,12 +45,45 @@ def draw_points_on_grid(points, grid):
         grid[point[1]][point[0]] = point_label
 
 
+def not_a_tie(x, y, points, shortest_distance):
+    tally = 0
+    for i, point in enumerate(points):
+        distance = abs(y - point[1]) + abs(x - point[0])
+        if distance == shortest_distance:
+            tally += 1
+            if tally > 1:
+                return False
+    return True
+
+
+
+def map_closest_coordinates(points, grid):
+    for y in range(len(grid)):
+        for x in range(len(grid)):
+            if (x, y) in points:
+                continue
+            shortest_distance = math.inf
+            closest_point_index = None
+            for i, point in enumerate(points):
+                distance = abs(y - point[1]) + abs(x - point[0])
+                if distance < shortest_distance:
+                    shortest_distance = distance
+                    closest_point_index = i
+            if not_a_tie(x, y, points, shortest_distance):
+                if closest_point_index != None:
+                    grid[y][x] = chr(ord('a') + closest_point_index)
+
+
+
 def part_one():
     points = read_puzzle_data('Day_06_short_data.txt')
     grid_size = size_the_grid(points)
     grid = create_grid(points, grid_size)
     draw_points_on_grid(points, grid)
+    map_closest_coordinates(points, grid)
     print(render_grid(grid))
+
+
 
 
 part_one()
