@@ -27,7 +27,8 @@ def part_one(filename):
     return ''.join(polymer)
 
 
-part_one('Day_05_short_data.txt')
+result = part_one('Day_05_data.txt')
+print(f'\nResulting polymer length: {len(result)}\n{"".join(result)}')
 
 
 class Test(unittest.TestCase):
