@@ -22,12 +22,12 @@ def size_the_grid(points):
             max_x = point[0]
         if point[1] > max_y:
             max_y = point[1]
-    return max(max_x, max_y)
+    return max(max_x, max_y) + 1
 
 
 def create_grid(points, grid_size):
     rval = []
-    for _ in range(grid_size):
+    for _ in range(grid_size + 1):
         rval.append(['.'] * grid_size)
     return rval
 
@@ -39,19 +39,26 @@ def render_grid(grid):
     return ''.join(rval)
 
 
+def draw_points_on_grid(points, grid):
+    for i, point in enumerate(points):
+        point_label = chr(ord('A') + i)
+        grid[point[1]][point[0]] = point_label
+
+
 def part_one():
     points = read_puzzle_data('Day_06_short_data.txt')
     grid_size = size_the_grid(points)
     grid = create_grid(points, grid_size)
+    draw_points_on_grid(points, grid)
     print(render_grid(grid))
 
 
 part_one()
 
-
-class Test(unittest.TestCase):
-    def test_measure_distances(self):
-        pass
-
-    def test_pick_closest_point(self):
-        pass
+#
+# class Test(unittest.TestCase):
+#     def test_measure_distances(self):
+#         pass
+#
+#     def test_pick_closest_point(self):
+#         pass
