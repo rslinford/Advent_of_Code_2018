@@ -136,18 +136,20 @@ def grok_log_strategy_one(log):
     minute = find_sleepiest_minute(winner, log)
     return winner, minute
 
+
 def find_minute_of_greatest_frequency(guard_pool):
     greatest_max_minute = 0
     greatest_guard = None
     greatest_max_index = 0
     for guard in guard_pool.values():
         max_minute_index = find_max_minute(guard.minute_tally)
-        print(f'Minute: {max_minute_index} Tallied at: {guard.minute_tally[max_minute_index]} for\n{guard.minute_tally}')
+        # print(f'Minute: {max_minute_index} Tallied at: {guard.minute_tally[max_minute_index]} for\n{guard.minute_tally}')
         if guard.minute_tally[max_minute_index] > greatest_max_minute:
             greatest_max_minute = guard.minute_tally[max_minute_index]
             greatest_guard = guard
             greatest_max_index = max_minute_index
     return greatest_guard, greatest_max_index
+
 
 def find_sleepiest_minute_two(guard_pool, log):
     for guard in guard_pool.values():
@@ -208,7 +210,7 @@ def part_two(filename):
     text_log_entries = read_puzzle_data(filename)
     log = sort_log(text_log_entries)
     winner, minute = grok_log_strategy_two(log)
-    print(f'Greatest minute {minute} for {winner}')
+    # print(f'Greatest minute {minute} for {winner}')
     return winner, minute
 
 
@@ -233,3 +235,8 @@ class TestLog(unittest.TestCase):
         winner, minute = part_one('Day_04_short_data.txt')
         self.assertEqual(10, winner.id)
         self.assertEqual(24, minute)
+
+    def test_part_2(self):
+        winner, minute = part_two('Day_04_data.txt')
+        self.assertEqual(239, winner.id)
+        self.assertEqual(33, minute)
