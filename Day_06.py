@@ -1,14 +1,8 @@
+import math
 import re
+import unittest
 
-
-def find_max_x_and_max_y(points):
-    max_x, max_y = 0, 0
-    for point in points:
-        if max_x < point[0]:
-            max_x = point[0]
-        if max_y < point[1]:
-            max_y = point[1]
-    return max_x, max_y
+import numpy as np
 
 
 def read_puzzle_data(filename):
@@ -21,11 +15,19 @@ def read_puzzle_data(filename):
         return rval
 
 
+
+
 def part_one():
     points = read_puzzle_data('Day_06_short_data.txt')
-    max_x, max_y = find_max_x_and_max_y(points)
-    square = max(max_x, max_y)
-    print(square)
+    print(points)
 
 
 part_one()
+
+
+class Test(unittest.TestCase):
+    def test_measure_distances(self):
+        pass
+
+    def test_pick_closest_point(self):
+        pass
