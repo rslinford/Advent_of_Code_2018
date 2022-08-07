@@ -51,11 +51,12 @@ def part_two(filename):
         if len(polymer) < shortest_length:
             shortest_length = len(polymer)
             unit_type = chr(n)
+            print(f'unit type {unit_type} length {shortest_length} {"".join(polymer)}')
         polymer = previous_polymer
     return unit_type, shortest_length
 
 
-unit_type, shortest_length = part_two('Day_05_short_data.txt')
+unit_type, shortest_length = part_two('Day_05_data.txt')
 print(f'unit_type {unit_type}   shortest length {shortest_length}')
 # print(f'\nResulting polymer length: {len(result)}\n{"".join(result)}')
 
