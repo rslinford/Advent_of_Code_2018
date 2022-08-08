@@ -25,7 +25,7 @@ def size_the_grid(points):
     return max(max_x, max_y) + 1
 
 
-def create_grid(points, grid_size):
+def create_grid(grid_size):
     rval = []
     for _ in range(grid_size + 1):
         rval.append(['.'] * (grid_size + 1))
@@ -56,7 +56,6 @@ def not_a_tie(x, y, points, shortest_distance):
     return True
 
 
-
 def map_closest_coordinates(points, grid):
     for y in range(len(grid)):
         for x in range(len(grid)):
@@ -74,14 +73,60 @@ def map_closest_coordinates(points, grid):
                     grid[y][x] = chr(ord('a') + closest_point_index)
 
 
+def survey_the_boarder(grid):
+    letters = set()
+    for x in range(len(grid)):
+        letter = grid[0][x]
+        if ord(letter) >= ord('a'):
+            letters.add(letter)
+    for x in range(len(grid)):
+        letter = grid[len(grid) - 1][x]
+        if ord(letter) >= ord('a'):
+            letters.add(letter)
+    for y in range(len(grid)):
+        letter = grid[y][0]
+        if ord(letter) >= ord('a'):
+            letters.add(letter)
+    for y in range(len(grid)):
+        letter = grid[y][len(grid) - 1]
+        if ord(letter) >= ord('a'):
+            letters.add(letter)
+    print(f'Letters on the boarder: {letters}')
+    return letters
+
+def count_letter(letter, grid):
+    tally = 0
+    for y in range(len(grid)):
+        for x in range(len(grid)):
+            letter_upper = chr(ord(letter) - 32)
+            if grid[y][x] == letter or grid[y][x] == letter_upper :
+                tally += 1
+
+    return tally
+
+
+def rank_largest_landlocked(points, grid, letters):
+    largest = 0
+    for i,point in enumerate(points):
+        letter = chr(ord('a') + i)
+        if letter not in letters:
+            n = count_letter(letter, grid)
+            if n > largest:
+                largest = n
+    return largest
+
+
 
 def part_one():
     points = read_puzzle_data('Day_06_short_data.txt')
     grid_size = size_the_grid(points)
-    grid = create_grid(points, grid_size)
+    grid = create_grid(grid_size)
     draw_points_on_grid(points, grid)
     map_closest_coordinates(points, grid)
+    letters = survey_the_boarder(grid)
+    size = rank_largest_landlocked(points, grid, letters)
     print(render_grid(grid))
+    print(f'Size of largest landlocked: {size}')
 
 
 
