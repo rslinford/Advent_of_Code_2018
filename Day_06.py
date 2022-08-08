@@ -115,10 +115,10 @@ def rank_largest_landlocked(points, grid, letters):
                 largest = n
     return largest
 
-
+#  It's not 7184
 
 def part_one():
-    points = read_puzzle_data('Day_06_short_data.txt')
+    points = read_puzzle_data('Day_06_data.txt')
     grid_size = size_the_grid(points)
     grid = create_grid(grid_size)
     draw_points_on_grid(points, grid)
@@ -127,8 +127,6 @@ def part_one():
     size = rank_largest_landlocked(points, grid, letters)
     print(render_grid(grid))
     print(f'Size of largest landlocked: {size}')
-
-
 
 
 part_one()
