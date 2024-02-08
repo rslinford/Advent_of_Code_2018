@@ -56,6 +56,7 @@ def scan(points, min_xy, max_xy):
                 counts[closest_point] += 1
     return counts
 
+
 def weed_out_infinities(points, min_xy, max_xy, counts: dict[tuple, int]):
     min_x, min_y = min_xy
     max_x, max_y = max_xy
@@ -75,7 +76,6 @@ def weed_out_infinities(points, min_xy, max_xy, counts: dict[tuple, int]):
             del counts[closest_point]
 
 
-
 def calculate_boundaries(points):
     border = 10
     min_xy = tuple(min(p[i] - border for p in points) for i in range(2))
@@ -93,10 +93,27 @@ def part_one(filename):
     return s[0]
 
 
-def part_two(filename):
+def find_region(points, min_xy, max_xy, max_distance):
+    region_size = 0
+    min_x, min_y = min_xy
+    max_x, max_y = max_xy
+    for y in range(min_y, max_y + 1):
+        for x in range(min_x, max_x + 1):
+            distance = 0
+            for point in points:
+                distance += calculate_manhattan_distance((x, y), point)
+            if distance < max_distance:
+                region_size += 1
+
+    return region_size
+
+
+def part_two(filename, max_distance):
     data = read_puzzle_input(filename)
-    data = parse_data(data)
-    return -1
+    points = parse_data(data)
+    min_xy, max_xy = calculate_boundaries(points)
+    region_size = find_region(points, min_xy, max_xy, max_distance)
+    return region_size
 
 
 class Test(unittest.TestCase):
@@ -105,8 +122,8 @@ class Test(unittest.TestCase):
         self.assertEqual(17, part_one('Day_06_short_data.txt'))
 
     def test_part_two(self):
-        self.assertEqual(-1, part_two('Day_06_data.txt'))
-        self.assertEqual(-1, part_two('Day_06_short_data.txt'))
+        self.assertEqual(-1, part_two('Day_06_data.txt', 10000))
+        # self.assertEqual(16, part_two('Day_06_short_data.txt', 32))
 
     def test_find_closest_point(self):
         data = read_puzzle_input('Day_06_short_data.txt')
