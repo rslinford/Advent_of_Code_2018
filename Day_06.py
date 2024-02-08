@@ -69,7 +69,7 @@ def map_closest_coordinates(points, grid):
                     shortest_distance = distance
                     closest_point_index = i
             if not_a_tie(x, y, points, shortest_distance):
-                if closest_point_index != None:
+                if closest_point_index is not None:
                     grid[y][x] = chr(ord('a') + closest_point_index)
 
 
