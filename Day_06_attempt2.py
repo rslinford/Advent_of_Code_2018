@@ -122,8 +122,8 @@ class Test(unittest.TestCase):
         self.assertEqual(17, part_one('Day_06_short_data.txt'))
 
     def test_part_two(self):
-        self.assertEqual(-1, part_two('Day_06_data.txt', 10000))
-        # self.assertEqual(16, part_two('Day_06_short_data.txt', 32))
+        self.assertEqual(35334, part_two('Day_06_data.txt', 10000))
+        self.assertEqual(16, part_two('Day_06_short_data.txt', 32))
 
     def test_find_closest_point(self):
         data = read_puzzle_input('Day_06_short_data.txt')
