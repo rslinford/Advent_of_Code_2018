@@ -51,12 +51,12 @@ def print_points(points):
                 print('.', end='')
         print()
 
+
 def calculate_field_size(points):
     min_xy, max_xy = find_boundaries(points)
     min_x, min_y = min_xy
     max_x, max_y = max_xy
     return (max_x - min_x) * (max_y - min_y)
-
 
 
 def advance_one_second(points):
