@@ -1,7 +1,6 @@
 import unittest
 
 GRID_SIZE = 300
-SQUARE_SIZE = 3
 
 
 def calculate_fuel_cell_power(serial_number, x, y):
@@ -16,10 +15,10 @@ def calculate_fuel_cell_power(serial_number, x, y):
     return int(hundreds) - 5
 
 
-def calculate_square_power(serial_number, x_corner, y_corner):
+def calculate_square_power(serial_number, x_corner, y_corner, square_size):
     total_power = 0
-    for y in range(y_corner, y_corner + SQUARE_SIZE):
-        for x in range(x_corner, x_corner + SQUARE_SIZE):
+    for y in range(y_corner, y_corner + square_size):
+        for x in range(x_corner, x_corner + square_size):
             total_power += calculate_fuel_cell_power(serial_number, x, y)
     return total_power
 
@@ -27,17 +26,27 @@ def calculate_square_power(serial_number, x_corner, y_corner):
 def part_one(serial_number):
     max_power = -float('inf')
     max_xy = None
-    for y in range(1, GRID_SIZE - SQUARE_SIZE + 2):
-        for x in range(1, GRID_SIZE - SQUARE_SIZE + 2):
-            power = calculate_square_power(serial_number, x, y)
+    square_size = 3
+    for y in range(1, GRID_SIZE - square_size + 2):
+        for x in range(1, GRID_SIZE - square_size + 2):
+            power = calculate_square_power(serial_number, x, y, square_size)
             if power > max_power:
                 max_power = power
                 max_xy = (x, y)
     return max_xy
 
 
-def part_two():
-    return -1
+def part_two(serial_number):
+    max_power = -float('inf')
+    max_xys = None
+    for square_size in range(10, 30):
+        for y in range(1, GRID_SIZE - square_size + 2):
+            for x in range(1, GRID_SIZE - square_size + 2):
+                power = calculate_square_power(serial_number, x, y, square_size)
+                if power > max_power:
+                    max_power = power
+                    max_xys = (x, y, square_size)
+    return max_xys
 
 
 class Test(unittest.TestCase):
@@ -46,8 +55,9 @@ class Test(unittest.TestCase):
         self.assertEqual((33, 45), part_one(18))
 
     def test_part_two(self):
-        self.assertEqual(-1, part_two())
-        self.assertEqual(-1, part_two())
+        self.assertEqual((231, 108, 14), part_two(1955))
+        # self.assertEqual((90, 269, 16), part_two(18))
+        # self.assertEqual((232, 251, 12), part_two(42))
 
     def test_calculate_fuel_cell_power(self):
         self.assertEqual(4, calculate_fuel_cell_power(8, 3, 5))
