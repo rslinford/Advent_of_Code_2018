@@ -1,5 +1,10 @@
 import unittest
-
+"""
+2 3 0 3 10 11 12 1 1 0 1 99 2 1 1 2
+A----------------------------------
+    B----------- C-----------
+                     D-----
+"""
 
 def read_puzzle_input(filename):
     with open(filename, 'r') as f:
