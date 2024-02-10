@@ -154,6 +154,13 @@ def parse_data(data):
     return grid, carts
 
 
+def detect_collision(carts, most_recently_moved_cart):
+    count = 0
+    for cart in carts:
+        if cart.x == most_recently_moved_cart.x and cart.y == most_recently_moved_cart.y:
+            count += 1
+    return count > 1
+
 def one_tick(grid, carts, tick_id):
     height = len(grid)
     width = len(grid[0])
@@ -163,10 +170,10 @@ def one_tick(grid, carts, tick_id):
             if not cart or cart.tick_id == tick_id:
                 continue
             cart.move(tick_id)
+            if detect_collision(carts, cart):
+                return cart.x, cart.y
             cart.encounter(grid[cart.y][cart.x])
-            # todo: detect collision
-    collision = None
-    return collision
+    return None
 
 def part_one(filename):
     data = read_puzzle_input(filename)
@@ -174,11 +181,11 @@ def part_one(filename):
     collision = None
     tick_id = 0
     while not collision:
-        print()
-        print_grid(grid, carts)
+        # print()
+        # print_grid(grid, carts)
         collision = one_tick(grid, carts, tick_id)
         tick_id += 1
-    return -1
+    return collision
 
 
 def part_two(filename):
@@ -189,8 +196,8 @@ def part_two(filename):
 
 class Test(unittest.TestCase):
     def test_part_one(self):
-        # self.assertEqual(-1, part_one('Day_13_data.txt'))
-        self.assertEqual(-1, part_one('Day_13_short_data.txt'))
+        self.assertEqual((38, 72), part_one('Day_13_data.txt'))
+        # self.assertEqual((7, 3), part_one('Day_13_short_data.txt'))
 
     def test_part_two(self):
         self.assertEqual(-1, part_two('Day_13_data.txt'))
