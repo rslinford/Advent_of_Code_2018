@@ -1,4 +1,3 @@
-import copy
 import unittest
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -40,10 +39,10 @@ class Cart:
         dx, dy = HEADING_TO_DXDY[self.heading]
         self.x += dx
         self.y += dy
-        self.tick_id= tick_id
+        self.tick_id = tick_id
 
     def encounter(self, c):
-        if c == '|' or c =='-':
+        if c == '|' or c == '-':
             return
         if c == '/':
             match self.heading:
@@ -161,6 +160,7 @@ def detect_collision(carts, most_recently_moved_cart):
             count += 1
     return count > 1
 
+
 def one_tick(grid, carts, tick_id):
     height = len(grid)
     width = len(grid[0])
@@ -174,6 +174,33 @@ def one_tick(grid, carts, tick_id):
                 return cart.x, cart.y
             cart.encounter(grid[cart.y][cart.x])
     return None
+
+
+def find_cart_at(carts, x, y):
+    for cart in carts:
+        if cart.x == x and cart.y == y:
+            return cart
+    return None
+
+
+def remove_carts_at(carts, x, y):
+    while cart := find_cart_at(carts, x, y):
+        carts.remove(cart)
+
+
+def one_tick_part_two(grid, carts, tick_id):
+    height = len(grid)
+    width = len(grid[0])
+    for y in range(height):
+        for x in range(width):
+            cart = look_up_cart(carts, x, y)
+            if not cart or cart.tick_id == tick_id:
+                continue
+            cart.move(tick_id)
+            if detect_collision(carts, cart):
+                remove_carts_at(carts, cart.x, cart.y)
+            cart.encounter(grid[cart.y][cart.x])
+
 
 def part_one(filename):
     data = read_puzzle_input(filename)
@@ -190,15 +217,21 @@ def part_one(filename):
 
 def part_two(filename):
     data = read_puzzle_input(filename)
-    data = parse_data(data)
-    return -1
+    grid, carts = parse_data(data)
+    tick_id = 0
+    while not len(carts) == 1:
+        # print()
+        # print_grid(grid, carts)
+        one_tick_part_two(grid, carts, tick_id)
+        tick_id += 1
+    return carts[0].x, carts[0].y
 
 
 class Test(unittest.TestCase):
     def test_part_one(self):
         self.assertEqual((38, 72), part_one('Day_13_data.txt'))
-        # self.assertEqual((7, 3), part_one('Day_13_short_data.txt'))
+        self.assertEqual((7, 3), part_one('Day_13_short_data.txt'))
 
     def test_part_two(self):
-        self.assertEqual(-1, part_two('Day_13_data.txt'))
-        self.assertEqual(-1, part_two('Day_13_short_data.txt'))
+        self.assertEqual((68, 27), part_two('Day_13_data.txt'))
+        self.assertEqual((6, 4), part_two('Day_13_short_data2.txt'))
