@@ -81,15 +81,19 @@ class Grid(dict):
 
     def print(self, overlay={}):
         for y in range(self.height):
+            units_on_row = []
             for x in range(self.width):
                 pos = Pt(x, y)
                 unit = self.unit_at(pos)
                 if unit:
                     print(unit.team, end='')
+                    units_on_row.append(unit)
                 elif pos in overlay:
                     print(overlay[pos], end='')
                 else:
                     print(self[pos], end='')
+            for unit in units_on_row:
+                print(f' ({unit.team}){unit.hp}', end='')
             print()
 
     def unit_at(self, pos):
@@ -185,19 +189,39 @@ class Grid(dict):
             return False
         return True
 
+    def attack(self, unit, enemies):
+        enemies.sort(key=lambda a: a.hp)
+        lowest_hp = enemies[0].hp
+        lowest_enemies = []
+        for enemy in enemies:
+            if lowest_hp == enemy.hp:
+                lowest_enemies.append(enemy)
+        lowest_enemies.sort()
+        target = lowest_enemies[0]
+        target.hp -= unit.attack
+        if target.hp <= 0:
+            self.units.remove(target)
+
 
 def part_one(filename):
     data = read_puzzle_input(filename)
     data = parse_data(data)
     g = Grid(data)
+    round_id = 0
+    print('Initial State')
+    g.print()
+    print()
     while g.in_play():
         g.units.sort()
+        round_id += 1
         for unit in g.units:
+            # Attack Phase (without moving first)
             enemies = g.find_enemies_in_range(unit)
             if enemies:
-                # todo: attack
+                g.attack(unit, enemies)
                 continue  # attack ends unit's turn
-            # Move
+
+            # Move Phase
             candidate_squares = g.open_neighbors_of_pos(unit.pos)
             if not candidate_squares:
                 continue  # there are no open squares to move to
@@ -223,17 +247,24 @@ def part_one(filename):
             came_from, cost_so_far = g.bfs(nearest_square)
             closest_candidate = None
             closest_distance = float('inf')
-            print()
-            g.print(cost_so_far)
             for candidate in candidate_squares:
                 if candidate in cost_so_far and cost_so_far[candidate] < closest_distance:
                     closest_distance = cost_so_far[candidate]
                     closest_candidate = candidate
             unit.move_to(closest_candidate)
-            print()
-            g.print()
 
-    return -1
+            # Attack Phase
+            enemies = g.find_enemies_in_range(unit)
+            if enemies:
+                g.attack(unit, enemies)
+        print(f'After round {round_id}')
+        g.print()
+        print()
+    hp_total = 0
+    for unit in g.units:
+        hp_total += unit.hp
+    score = round_id * hp_total
+    return score
 
 
 def part_two(filename):
@@ -245,8 +276,8 @@ def part_two(filename):
 class Test(unittest.TestCase):
     def test_part_one(self):
         # self.assertEqual(-1, part_one('Day_15_data.txt'))
-        self.assertEqual(-1, part_one('Day_15_short_data.txt'))
-        # self.assertEqual(-1, part_one('Day_15_short_data3.txt'))
+        # self.assertEqual(-1, part_one('Day_15_short_data.txt'))
+        self.assertEqual(27730, part_one('Day_15_short_data4.txt'))
 
     def test_part_two(self):
         self.assertEqual(-1, part_two('Day_15_data.txt'))
