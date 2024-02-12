@@ -217,18 +217,18 @@ def part_one(filename):
             nearest_square = None
             nearest_distance = float('inf')
             for square in reachable_enemy_squares:
-                if cost_so_far[square] < nearest_distance:
+                if square in cost_so_far and cost_so_far[square] < nearest_distance:
                     nearest_distance = cost_so_far[square]
                     nearest_square = square
             came_from, cost_so_far = g.bfs(nearest_square)
             closest_candidate = None
             closest_distance = float('inf')
+            print()
+            g.print(cost_so_far)
             for candidate in candidate_squares:
-                if cost_so_far[candidate] < closest_distance:
+                if candidate in cost_so_far and cost_so_far[candidate] < closest_distance:
                     closest_distance = cost_so_far[candidate]
                     closest_candidate = candidate
-            print()
-            g.print()
             unit.move_to(closest_candidate)
             print()
             g.print()
@@ -245,8 +245,8 @@ def part_two(filename):
 class Test(unittest.TestCase):
     def test_part_one(self):
         # self.assertEqual(-1, part_one('Day_15_data.txt'))
-        # self.assertEqual(-1, part_one('Day_15_short_data.txt'))
-        self.assertEqual(-1, part_one('Day_15_short_data3.txt'))
+        self.assertEqual(-1, part_one('Day_15_short_data.txt'))
+        # self.assertEqual(-1, part_one('Day_15_short_data3.txt'))
 
     def test_part_two(self):
         self.assertEqual(-1, part_two('Day_15_data.txt'))
