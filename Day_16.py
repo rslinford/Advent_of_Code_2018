@@ -21,13 +21,15 @@ def parse_data(data):
     data = data.split('\n\n\n')
     sample_data = data[0].split('\n\n')
     samples = []
-    for bad in sample_data:
-        bad = bad.splitlines()
-        before = list(map(int, re.findall(r'\d+', bad[0])))
-        instruction = list(map(int, re.findall(r'\d+', bad[1])))
-        after = list(map(int, re.findall(r'\d+', bad[2])))
+    for clump in sample_data:
+        clump = clump.splitlines()
+        before = list(map(int, re.findall(r'\d+', clump[0])))
+        instruction = list(map(int, re.findall(r'\d+', clump[1])))
+        after = list(map(int, re.findall(r'\d+', clump[2])))
         samples.append(Sample(before, instruction, after))
-    instructions = data[1].splitlines()
+    instructions = []
+    for row in data[1].strip().splitlines():
+        instructions.append(list(map(int, re.findall(r'\d+', row))))
     return samples, instructions
 
 
@@ -189,34 +191,50 @@ def part_one(filename):
 
     return three_or_more_tally
 
+def filter_samples(samples: List[Sample], op_code):
+    a = []
+    for sample in samples:
+        if sample.instruction[0] == op_code:
+            a.append(sample)
+    return a
 
 def part_two(filename):
     data = read_puzzle_input(filename)
     samples, instructions = parse_data(data)
     p = Processor()
-    method_set = build_instruction_set(p)
-    three_or_more_tally = 0
-    for sample in samples:
-        tally = 0
-        for method in method_set:
-            p.registers = sample.before.copy()
-            method(sample.instruction)
-            if p.registers == sample.after:
-                tally += 1
-        if tally >= 3:
-            three_or_more_tally += 1
-
-    return three_or_more_tally
+    method_map = {} # op_code to method
+    while len(method_map) < 16:
+        method_set = [a for a in build_instruction_set(p) if a not in method_map.values()]
+        op_codes = [a for a in range(16) if a not in method_map.keys()]
+        if len(method_set) == 1:
+            method_map[op_codes[0]] = method_set[0]
+            continue
+        for op_code in op_codes:
+            method_candidates = method_set.copy()
+            for sample in filter_samples(samples, op_code):
+                for method in method_set:
+                    p.registers = sample.before.copy()
+                    method(sample.instruction)
+                    if p.registers != sample.after:
+                        if method in method_candidates:
+                            method_candidates.remove(method)
+                            if len(method_candidates) == 1:
+                                method_map[op_code] = method_candidates[0]
+    p.registers = [0, 0, 0, 0]
+    for i in instructions:
+        method = method_map[i[0]]
+        method(i)
+    return p.registers[0]
 
 
 class Test(unittest.TestCase):
     def test_part_one(self):
-        self.assertEqual(-1, part_one('Day_16_data.txt'))
+        self.assertEqual(509, part_one('Day_16_data.txt'))
         # self.assertEqual(1, part_one('Day_16_short_data.txt'))
 
     def test_part_two(self):
-        self.assertEqual(-1, part_two('Day_16_data.txt'))
-        self.assertEqual(-1, part_two('Day_16_short_data.txt'))
+        self.assertEqual(496, part_two('Day_16_data.txt'))
+        # self.assertEqual(-1, part_two('Day_16_short_data.txt'))
 
     def test_processor_addr(self):
         p = Processor()
